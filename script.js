@@ -66,6 +66,9 @@
     var svg = document.getElementById('network-svg');
     var cx = 300, cy = 300, r = 200;
     var n = DATA.length;
+    var rotateDur = 46; // detik per satu putaran penuh — supaya tidak ada kelas yang "menetap" di atas
+    var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
     var nodes = DATA.map(function(d, i){
       var angle = (-90 + i * (360 / n)) * Math.PI / 180;
       return {
@@ -78,7 +81,6 @@
 
     var parts = [];
 
-    // definitions
     parts.push(
       '<defs>' +
         '<radialGradient id="coreGlow" cx="50%" cy="50%" r="50%">' +
@@ -88,15 +90,26 @@
       '</defs>'
     );
 
-    // connecting lines
-    nodes.forEach(function(node, i){
+    // cincin luar statis, tetap di belakang rotor
+    parts.push('<circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="none" stroke="#1E2B42" stroke-width="1" stroke-dasharray="2 6"/>');
+
+    // --- grup rotor: garis + pulsa + badge kelas berputar bersama ---
+    parts.push('<g class="net-rotor">');
+    if(!reduceMotion){
+      parts.push(
+        '<animateTransform attributeName="transform" type="rotate" ' +
+        'from="0 ' + cx + ' ' + cy + '" to="360 ' + cx + ' ' + cy + '" ' +
+        'dur="' + rotateDur + 's" repeatCount="indefinite"/>'
+      );
+    }
+
+    nodes.forEach(function(node){
       parts.push(
         '<line class="net-line" x1="' + cx + '" y1="' + cy + '" x2="' + node.x + '" y2="' + node.y +
         '" stroke="' + (node.xii ? VIOLET : TEAL) + '" stroke-width="1.2" stroke-opacity="0.35"/>'
       );
     });
 
-    // traveling pulses along lines
     nodes.forEach(function(node, i){
       parts.push(
         '<circle r="3" fill="' + (node.xii ? VIOLET : TEAL) + '">' +
@@ -107,10 +120,26 @@
       );
     });
 
-    // outer ring (subtle)
-    parts.push('<circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="none" stroke="#1E2B42" stroke-width="1" stroke-dasharray="2 6"/>');
+    // badge kelas — masing-masing berputar balik di sekitar pusatnya sendiri agar label tetap tegak
+    nodes.forEach(function(node){
+      parts.push('<g>');
+      if(!reduceMotion){
+        parts.push(
+          '<animateTransform attributeName="transform" type="rotate" ' +
+          'from="0 ' + node.x + ' ' + node.y + '" to="-360 ' + node.x + ' ' + node.y + '" ' +
+          'dur="' + rotateDur + 's" repeatCount="indefinite"/>'
+        );
+      }
+      parts.push(
+        '<circle cx="' + node.x + '" cy="' + node.y + '" r="26" fill="#0C111C" stroke="' + (node.xii ? VIOLET : TEAL) + '" stroke-width="1.6"/>' +
+        '<text x="' + node.x + '" y="' + (node.y + 4) + '" text-anchor="middle" fill="#EAF2FF" font-family="JetBrains Mono, monospace" font-weight="600" font-size="11">' + node.kelas.replace(' - ','-') + '</text>'
+      );
+      parts.push('</g>');
+    });
 
-    // core
+    parts.push('</g>'); // tutup rotor
+
+    // inti — tetap diam di tengah, di luar rotor
     parts.push('<circle cx="' + cx + '" cy="' + cy + '" r="70" fill="url(#coreGlow)" opacity="0.5"/>');
     parts.push('<circle cx="' + cx + '" cy="' + cy + '" r="34" fill="#0C111C" stroke="' + TEAL + '" stroke-width="1.6"/>');
     parts.push(
@@ -118,22 +147,14 @@
       '<text x="' + cx + '" y="' + (cy + 14) + '" text-anchor="middle" fill="#5A6B8C" font-family="JetBrains Mono, monospace" font-size="9" letter-spacing="1">CORE</text>'
     );
 
-    // node badges
-    nodes.forEach(function(node){
-      parts.push(
-        '<g class="net-node">' +
-          '<circle cx="' + node.x + '" cy="' + node.y + '" r="26" fill="#0C111C" stroke="' + (node.xii ? VIOLET : TEAL) + '" stroke-width="1.6"/>' +
-          '<text x="' + node.x + '" y="' + (node.y + 4) + '" text-anchor="middle" fill="#EAF2FF" font-family="JetBrains Mono, monospace" font-weight="600" font-size="11">' + node.kelas.replace(' - ','-') + '</text>' +
-        '</g>'
-      );
-    });
-
     svg.innerHTML = parts.join('');
   }
 
   /* ---------------- Modal ---------------- */
   var currentIndex = 0;
-  var overlay, modalTitle, modalEyebrow, tbody, countEl, emptyEl, modalSearch;
+  var overlay, modalTitle, modalEyebrow, tbody, countEl, emptyEl, modalSearch, copyBtn, copyLabel;
+  var currentVisibleList = [];
+  var copyResetTimer = null;
 
   function highlight(text, query){
     if(!query) return escapeHtml(text);
@@ -154,6 +175,8 @@
       return !q || s.nama.toUpperCase().indexOf(q.toUpperCase()) !== -1;
     });
 
+    currentVisibleList = list;
+
     if(list.length === 0){
       tbody.innerHTML = '';
       emptyEl.hidden = false;
@@ -164,6 +187,67 @@
       }).join('');
     }
     countEl.textContent = list.length + ' / ' + d.siswa.length + ' siswa';
+    resetCopyState();
+  }
+
+  function buildCopyText(){
+    var d = DATA[currentIndex];
+    var lines = [
+      'GELETEK — Daftar Siswa Kelas ' + d.kelas,
+      'SMA Negeri 1 Baturetno — T.A. 2026/2027',
+      ''
+    ];
+    currentVisibleList.forEach(function(s){
+      lines.push(s.no + '. ' + s.nama);
+    });
+    return lines.join('\n');
+  }
+
+  function resetCopyState(){
+    if(copyResetTimer) clearTimeout(copyResetTimer);
+    if(copyBtn){
+      copyBtn.classList.remove('is-copied');
+      copyLabel.textContent = 'Salin Data';
+    }
+  }
+
+  function copyClassData(){
+    var text = buildCopyText();
+    var done = function(){
+      copyBtn.classList.add('is-copied');
+      copyLabel.textContent = 'Tersalin ✓';
+      if(copyResetTimer) clearTimeout(copyResetTimer);
+      copyResetTimer = setTimeout(function(){
+        copyBtn.classList.remove('is-copied');
+        copyLabel.textContent = 'Salin Data';
+      }, 1800);
+    };
+    var fail = function(){
+      copyLabel.textContent = 'Gagal menyalin';
+      copyResetTimer = setTimeout(function(){ copyLabel.textContent = 'Salin Data'; }, 1800);
+    };
+
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(done).catch(function(){
+        fallbackCopy(text) ? done() : fail();
+      });
+    } else {
+      fallbackCopy(text) ? done() : fail();
+    }
+  }
+
+  function fallbackCopy(text){
+    try{
+      var ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.focus(); ta.select();
+      var ok = document.execCommand('copy');
+      document.body.removeChild(ta);
+      return ok;
+    }catch(e){ return false; }
   }
 
   function openModal(index){
@@ -235,6 +319,10 @@
     countEl = document.getElementById('modal-count');
     emptyEl = document.getElementById('modal-empty');
     modalSearch = document.getElementById('modal-search');
+    copyBtn = document.getElementById('modal-copy');
+    copyLabel = document.getElementById('modal-copy-label');
+
+    copyBtn.addEventListener('click', copyClassData);
 
     document.getElementById('modal-close').addEventListener('click', closeModal);
     overlay.addEventListener('click', function(e){
