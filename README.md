@@ -49,9 +49,14 @@ tidak perlu mengubah `index.html`, `style.css`, maupun `script.js`.
 ## Fitur
 
 - Ringkasan 5 kelas ampuan dalam bentuk kartu "simpul" interaktif
-- Diagram jaringan menghubungkan kelima kelas ke inti GELETEK
+- Diagram jaringan animasi (berputar halus, searah jarum jam) menghubungkan
+  kelima kelas ke inti GELETEK — tidak ada satu kelas yang menetap di posisi atas
 - Detail siswa per kelas (nomor presensi + nama) dalam modal, lengkap
   dengan kotak pencarian di dalam kelas tersebut
+- **Salin data** — salin daftar siswa (atau hasil pencarian) satu kelas ke clipboard sekali klik
+- **Pengacak nama** — tab khusus di dalam tiap modal kelas untuk memilih siswa
+  secara acak (misalnya untuk sesi tanya jawab). Bisa diatur "tanpa pengulangan"
+  sampai direset, dan menyimpan riwayat siapa saja yang sudah terpilih
 - Pencarian nama lintas seluruh kelas dari satu kotak pencarian
 - Sepenuhnya responsif (desktop, tablet, mobile) dan mendukung
   `prefers-reduced-motion`

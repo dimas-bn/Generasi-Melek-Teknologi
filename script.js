@@ -156,6 +156,14 @@
   var currentVisibleList = [];
   var copyResetTimer = null;
 
+  // random picker
+  var tabList, tabPicker, panelList, panelPicker;
+  var pickerStage, pickerPlaceholder, pickerNameEl, pickerSpinBtn, pickerResetBtn;
+  var pickerNoRepeat, pickerPoolCount, pickerHistory;
+  var pickedState = {}; // { classIndex: Set(no) }
+  var isSpinning = false;
+  var spinTimer = null;
+
   function highlight(text, query){
     if(!query) return escapeHtml(text);
     var idx = text.toUpperCase().indexOf(query.toUpperCase());
@@ -250,6 +258,118 @@
     }catch(e){ return false; }
   }
 
+  /* ---------------- Tab switching ---------------- */
+  function switchTab(tab){
+    var toPicker = (tab === 'picker');
+    tabList.classList.toggle('is-active', !toPicker);
+    tabPicker.classList.toggle('is-active', toPicker);
+    tabList.setAttribute('aria-selected', String(!toPicker));
+    tabPicker.setAttribute('aria-selected', String(toPicker));
+    panelList.hidden = toPicker;
+    panelPicker.hidden = !toPicker;
+    if(toPicker) renderPicker();
+  }
+
+  /* ---------------- Random picker ---------------- */
+  function getPickedSet(){
+    if(!pickedState[currentIndex]) pickedState[currentIndex] = {};
+    return pickedState[currentIndex];
+  }
+
+  function getPickerPool(){
+    var d = DATA[currentIndex];
+    var noRepeat = pickerNoRepeat.checked;
+    if(!noRepeat) return d.siswa.slice();
+    var picked = getPickedSet();
+    return d.siswa.filter(function(s){ return !picked[s.no]; });
+  }
+
+  function renderPicker(){
+    var d = DATA[currentIndex];
+    var picked = getPickedSet();
+    var pickedList = d.siswa.filter(function(s){ return picked[s.no]; });
+    var pool = getPickerPool();
+
+    pickerPoolCount.textContent = pickerNoRepeat.checked
+      ? 'Sisa ' + pool.length + ' dari ' + d.siswa.length + ' siswa'
+      : d.siswa.length + ' siswa dalam undian (pengulangan diperbolehkan)';
+
+    pickerSpinBtn.disabled = isSpinning || (pickerNoRepeat.checked && pool.length === 0);
+    pickerResetBtn.disabled = pickedList.length === 0;
+
+    if(pickedList.length === 0){
+      pickerHistory.innerHTML = '';
+    } else {
+      pickerHistory.innerHTML = pickedList
+        .sort(function(a,b){ return picked[a.no] - picked[b.no]; })
+        .map(function(s){
+          return '<span class="picker__chip"><span class="picker__chip-no">' + String(s.no).padStart(2,'0') + '</span>' + escapeHtml(s.nama) + '</span>';
+        }).join('');
+    }
+
+    if(pickerNoRepeat.checked && pool.length === 0 && pickedList.length > 0){
+      pickerPlaceholder.hidden = false;
+      pickerPlaceholder.textContent = 'Semua siswa sudah terpilih — tekan Reset untuk mengulang';
+      pickerNameEl.hidden = true;
+      pickerStage.classList.add('is-empty');
+    }
+  }
+
+  function spinPicker(){
+    if(isSpinning) return;
+    var pool = getPickerPool();
+    if(pool.length === 0) return;
+
+    isSpinning = true;
+    pickerSpinBtn.disabled = true;
+    pickerStage.classList.remove('is-empty');
+    pickerPlaceholder.hidden = true;
+    pickerNameEl.hidden = false;
+    pickerNameEl.classList.remove('is-landed');
+    pickerNameEl.classList.add('is-spinning');
+
+    var displayPool = DATA[currentIndex].siswa; // shuffle visual from full class for excitement
+    var elapsed = 0;
+    var totalDuration = 1100;
+    var intervalDelay = 60;
+
+    function tick(){
+      var r = displayPool[Math.floor(Math.random() * displayPool.length)];
+      pickerNameEl.textContent = r.nama;
+      elapsed += intervalDelay;
+      if(elapsed < totalDuration){
+        intervalDelay = Math.min(intervalDelay + 12, 180);
+        spinTimer = setTimeout(tick, intervalDelay);
+      } else {
+        landPicker(pool);
+      }
+    }
+    tick();
+  }
+
+  function landPicker(pool){
+    var winner = pool[Math.floor(Math.random() * pool.length)];
+    pickerNameEl.textContent = winner.nama;
+    pickerNameEl.classList.remove('is-spinning');
+    pickerNameEl.classList.add('is-landed');
+
+    var picked = getPickedSet();
+    picked[winner.no] = Date.now();
+
+    isSpinning = false;
+    renderPicker();
+  }
+
+  function resetPicker(){
+    pickedState[currentIndex] = {};
+    pickerNameEl.hidden = true;
+    pickerNameEl.classList.remove('is-landed', 'is-spinning');
+    pickerPlaceholder.hidden = false;
+    pickerPlaceholder.textContent = 'Tekan \u201cAcak Nama\u201d untuk mulai';
+    pickerStage.classList.remove('is-empty');
+    renderPicker();
+  }
+
   function openModal(index){
     currentIndex = index;
     var d = DATA[index];
@@ -257,6 +377,13 @@
     modalTitle.textContent = d.kelas;
     modalSearch.value = '';
     renderModalTable('');
+    switchTab('list');
+    if(spinTimer) clearTimeout(spinTimer);
+    isSpinning = false;
+    pickerNameEl.hidden = true;
+    pickerNameEl.classList.remove('is-landed', 'is-spinning');
+    pickerPlaceholder.hidden = false;
+    pickerStage.classList.remove('is-empty');
     overlay.classList.add('is-open');
     document.body.style.overflow = 'hidden';
     setTimeout(function(){ modalSearch.focus(); }, 250);
@@ -321,6 +448,25 @@
     modalSearch = document.getElementById('modal-search');
     copyBtn = document.getElementById('modal-copy');
     copyLabel = document.getElementById('modal-copy-label');
+
+    tabList = document.getElementById('tab-list');
+    tabPicker = document.getElementById('tab-picker');
+    panelList = document.getElementById('panel-list');
+    panelPicker = document.getElementById('panel-picker');
+    pickerStage = document.getElementById('picker-stage');
+    pickerPlaceholder = document.getElementById('picker-placeholder');
+    pickerNameEl = document.getElementById('picker-name');
+    pickerSpinBtn = document.getElementById('picker-spin');
+    pickerResetBtn = document.getElementById('picker-reset');
+    pickerNoRepeat = document.getElementById('picker-no-repeat');
+    pickerPoolCount = document.getElementById('picker-pool-count');
+    pickerHistory = document.getElementById('picker-history');
+
+    tabList.addEventListener('click', function(){ switchTab('list'); });
+    tabPicker.addEventListener('click', function(){ switchTab('picker'); });
+    pickerSpinBtn.addEventListener('click', spinPicker);
+    pickerResetBtn.addEventListener('click', resetPicker);
+    pickerNoRepeat.addEventListener('change', renderPicker);
 
     copyBtn.addEventListener('click', copyClassData);
 
