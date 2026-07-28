@@ -57,6 +57,10 @@ tidak perlu mengubah `index.html`, `style.css`, maupun `script.js`.
 - **Pengacak nama** — tab khusus di dalam tiap modal kelas untuk memilih siswa
   secara acak (misalnya untuk sesi tanya jawab). Bisa diatur "tanpa pengulangan"
   sampai direset, dan menyimpan riwayat siapa saja yang sudah terpilih
+- **Mode cetak / PDF** — tombol "Cetak / PDF" di setiap modal kelas (satu kelas),
+  dan tombol "Cetak Semua Kelas" di halaman utama (kelima kelas sekaligus, satu
+  kelas per halaman). Memakai dialog cetak bawaan browser — pilih "Save as PDF"
+  di sana untuk mengunduh sebagai file PDF, atau kirim langsung ke printer
 - Pencarian nama lintas seluruh kelas dari satu kotak pencarian
 - Sepenuhnya responsif (desktop, tablet, mobile) dan mendukung
   `prefers-reduced-motion`

@@ -198,6 +198,19 @@ main, header, footer{position:relative; z-index:2;}
 }
 .section__desc{color:var(--text-mid); max-width:62ch; margin:0 0 36px;}
 
+.section__head--with-action{
+  display:flex; align-items:flex-start; justify-content:space-between; gap:24px; flex-wrap:wrap;
+}
+.print-all-btn{
+  display:flex; align-items:center; gap:8px; flex:none;
+  background:var(--bg-panel); border:1px solid var(--line);
+  color:var(--text-mid); font-size:.85rem; font-weight:500;
+  padding:11px 18px; border-radius:999px; cursor:pointer;
+  white-space:nowrap;
+  transition:color .2s var(--ease), border-color .2s var(--ease), background .2s var(--ease);
+}
+.print-all-btn:hover{color:var(--text-hi); border-color:var(--teal-dim); background:var(--bg-elevated);}
+
 /* ---------- class grid ---------- */
 .class-grid{
   display:grid; grid-template-columns:repeat(3, 1fr); gap:18px;
@@ -557,4 +570,65 @@ main, header, footer{position:relative; z-index:2;}
   .class-grid{grid-template-columns:1fr;}
   .modal{max-height:88vh;}
   .footer__inner{padding:0 18px; flex-direction:column;}
+  .section__head--with-action{flex-direction:column; align-items:stretch;}
+  .print-all-btn{justify-content:center;}
+}
+
+/* =========================================================
+   MODE CETAK / PDF
+   #print-sheet is populated by JS just before window.print()
+   and is invisible on screen; only @media print reveals it.
+   ========================================================= */
+#print-sheet{ display:none; }
+
+@media print{
+  @page{ size:A4; margin:14mm 12mm; }
+
+  html, body{ background:#ffffff !important; }
+  body.is-printing > *:not(#print-sheet){ display:none !important; }
+  .grid-veil, .scan-veil{ display:none !important; }
+
+  body.is-printing #print-sheet{
+    display:block !important;
+    color:#111318;
+    font-family:'Inter', Arial, sans-serif;
+    -webkit-print-color-adjust:exact; print-color-adjust:exact;
+  }
+
+  .print-block{
+    page-break-after:always;
+  }
+  .print-block:last-child{ page-break-after:auto; }
+
+  .print-head{
+    display:flex; align-items:center; justify-content:space-between;
+    gap:16px; border-bottom:2px solid #111318; padding-bottom:10px; margin-bottom:14px;
+  }
+  .print-brand{
+    display:flex; align-items:center; gap:8px;
+    font-family:'Space Grotesk', Arial, sans-serif; font-weight:700; font-size:15px;
+    color:#0B7A6E;
+  }
+  .print-brand__tag{color:#0B7A6E;}
+  .print-meta{ text-align:right; font-size:10.5px; color:#555; line-height:1.5; }
+
+  .print-title{ font-family:'Space Grotesk', Arial, sans-serif; font-size:20px; font-weight:700; margin:4px 0 2px; }
+  .print-sub{ font-size:11px; color:#555; margin:0 0 16px; }
+
+  .print-table{ width:100%; border-collapse:collapse; margin-bottom:22px; }
+  .print-table th{
+    text-align:left; font-size:10px; text-transform:uppercase; letter-spacing:.05em;
+    color:#444; border-bottom:1.4px solid #111318; padding:6px 6px;
+  }
+  .print-table td{
+    font-size:12.5px; padding:6px 6px; border-bottom:1px solid #ccc;
+  }
+  .print-table td.print-no{ width:40px; color:#666; font-family:'JetBrains Mono', monospace; font-size:11px; }
+
+  .print-foot{ display:flex; justify-content:space-between; align-items:flex-end; margin-top:10px; }
+  .print-foot__count{ font-size:11px; color:#555; }
+  .print-sign{ text-align:center; font-size:11.5px; min-width:190px; }
+  .print-sign__place{ margin-bottom:56px; }
+  .print-sign__name{ font-weight:700; text-decoration:underline; }
+  .print-sign__role{ font-size:10.5px; color:#555; }
 }

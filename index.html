@@ -84,10 +84,20 @@
 
   <!-- ============ KELAS GRID ============ -->
   <section class="section" id="kelas">
-    <div class="section__head">
-      <p class="section__eyebrow">01 &mdash; Simpul Kelas</p>
-      <h2 class="section__title">Pilih kelas untuk membuka data</h2>
-      <p class="section__desc">Dua rombel fase F (XI) dan tiga rombel kelas XII berjalan paralel dalam satu jaringan ampuan.</p>
+    <div class="section__head section__head--with-action">
+      <div>
+        <p class="section__eyebrow">01 &mdash; Simpul Kelas</p>
+        <h2 class="section__title">Pilih kelas untuk membuka data</h2>
+        <p class="section__desc">Dua rombel fase F (XI) dan tiga rombel kelas XII berjalan paralel dalam satu jaringan ampuan.</p>
+      </div>
+      <button class="print-all-btn" id="print-all-btn" type="button">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M6 9V3H18V9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <rect x="4" y="9" width="16" height="8" rx="1.5" stroke="currentColor" stroke-width="2"/>
+          <path d="M6 14H18V21H6V14Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+        </svg>
+        Cetak Semua Kelas
+      </button>
     </div>
 
     <div class="class-grid" id="class-grid">
@@ -193,6 +203,14 @@
           </svg>
           <span id="modal-copy-label">Salin Data</span>
         </button>
+        <button class="modal__copy" id="modal-print" type="button">
+          <svg class="modal__copy-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M6 9V3H18V9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <rect x="4" y="9" width="16" height="8" rx="1.5" stroke="currentColor" stroke-width="2"/>
+            <path d="M6 14H18V21H6V14Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+          </svg>
+          <span>Cetak / PDF</span>
+        </button>
       </div>
 
       <div class="modal__table-wrap">
@@ -238,6 +256,9 @@
     </div>
   </div>
 </div>
+
+<!-- ============ LEMBAR CETAK (hanya tampil saat print) ============ -->
+<div id="print-sheet" aria-hidden="true"></div>
 
 <script src="data.js"></script>
 <script src="script.js"></script>

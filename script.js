@@ -370,6 +370,71 @@
     renderPicker();
   }
 
+  /* ---------------- Print / PDF ---------------- */
+  function printDateNow(){
+    var bulan = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+    var now = new Date();
+    return now.getDate() + ' ' + bulan[now.getMonth()] + ' ' + now.getFullYear();
+  }
+
+  function buildPrintBlock(d){
+    var tanggal = printDateNow();
+    var rows = d.siswa.map(function(s){
+      return '<tr><td class="print-no">' + String(s.no).padStart(2,'0') + '</td><td>' + escapeHtml(s.nama) + '</td></tr>';
+    }).join('');
+
+    return (
+      '<div class="print-block">' +
+        '<div class="print-head">' +
+          '<div class="print-brand">GELETEK<span class="print-brand__tag">.</span></div>' +
+          '<div class="print-meta">SMA Negeri 1 Baturetno<br>Informatika &middot; Koding dan Kecerdasan Artifisial (KKA)</div>' +
+        '</div>' +
+        '<h1 class="print-title">Daftar Siswa Kelas ' + escapeHtml(d.kelas) + '</h1>' +
+        '<p class="print-sub">Tahun Ajaran 2026/2027 &middot; Dicetak ' + tanggal + '</p>' +
+        '<table class="print-table">' +
+          '<thead><tr><th>No.</th><th>Nama Siswa</th></tr></thead>' +
+          '<tbody>' + rows + '</tbody>' +
+        '</table>' +
+        '<div class="print-foot">' +
+          '<span class="print-foot__count">Jumlah siswa: ' + d.siswa.length + '</span>' +
+          '<div class="print-sign">' +
+            '<div class="print-sign__place">Baturetno, ' + tanggal + '</div>' +
+            '<div class="print-sign__name">Dimas Bagus Nurdiansyah</div>' +
+            '<div class="print-sign__role">Guru Informatika &amp; KKA</div>' +
+          '</div>' +
+        '</div>' +
+      '</div>'
+    );
+  }
+
+  function triggerPrint(blocksHtml){
+    var sheet = document.getElementById('print-sheet');
+    sheet.innerHTML = blocksHtml;
+    document.body.classList.add('is-printing');
+
+    function cleanup(){
+      document.body.classList.remove('is-printing');
+      sheet.innerHTML = '';
+      window.removeEventListener('afterprint', cleanup);
+    }
+    window.addEventListener('afterprint', cleanup);
+
+    setTimeout(function(){
+      window.print();
+      // fallback cleanup for browsers without afterprint support
+      setTimeout(cleanup, 2000);
+    }, 50);
+  }
+
+  function printCurrentClass(){
+    triggerPrint(buildPrintBlock(DATA[currentIndex]));
+  }
+
+  function printAllClasses(){
+    var html = DATA.map(function(d){ return buildPrintBlock(d); }).join('');
+    triggerPrint(html);
+  }
+
   function openModal(index){
     currentIndex = index;
     var d = DATA[index];
@@ -469,6 +534,10 @@
     pickerNoRepeat.addEventListener('change', renderPicker);
 
     copyBtn.addEventListener('click', copyClassData);
+
+    document.getElementById('modal-print').addEventListener('click', printCurrentClass);
+    var printAllBtn = document.getElementById('print-all-btn');
+    if(printAllBtn) printAllBtn.addEventListener('click', printAllClasses);
 
     document.getElementById('modal-close').addEventListener('click', closeModal);
     overlay.addEventListener('click', function(e){
