@@ -2,6 +2,27 @@
   "use strict";
 
   var DATA = GELETEK_DATA; // [{kelas, siswa:[{no, nama}]}]
+  var POIN = (typeof GELETEK_POIN !== 'undefined') ? GELETEK_POIN : {};
+
+  function getPoin(kelas, nama){
+    var kelasMap = POIN[kelas];
+    if(!kelasMap) return null;
+    var v = kelasMap[nama];
+    return (typeof v === 'number' && !isNaN(v)) ? v : null;
+  }
+
+  function poinTier(v){
+    if(v === null) return 'none';
+    if(v >= 5) return 'high';
+    if(v <= 2) return 'low';
+    return 'mid';
+  }
+
+  function poinBadgeHtml(kelas, nama){
+    var v = getPoin(kelas, nama);
+    if(v === null) return '<span class="poin-badge poin-badge--none">&ndash;</span>';
+    return '<span class="poin-badge poin-badge--' + poinTier(v) + '">' + v.toFixed(1).replace(/\.0$/,'') + '</span>';
+  }
 
   var TEAL = '#45E8D2';
   var VIOLET = '#8B7FFF';
@@ -191,7 +212,7 @@
     } else {
       emptyEl.hidden = true;
       tbody.innerHTML = list.map(function(s){
-        return '<tr><td class="col-no">' + String(s.no).padStart(2,'0') + '</td><td class="col-nama">' + highlight(s.nama, q) + '</td></tr>';
+        return '<tr><td class="col-no">' + String(s.no).padStart(2,'0') + '</td><td class="col-nama">' + highlight(s.nama, q) + '</td><td class="col-poin">' + poinBadgeHtml(d.kelas, s.nama) + '</td></tr>';
       }).join('');
     }
     countEl.textContent = list.length + ' / ' + d.siswa.length + ' siswa';
@@ -206,7 +227,8 @@
       ''
     ];
     currentVisibleList.forEach(function(s){
-      lines.push(s.no + '. ' + s.nama);
+      var v = getPoin(d.kelas, s.nama);
+      lines.push(s.no + '. ' + s.nama + (v !== null ? ' — Poin: ' + v : ''));
     });
     return lines.join('\n');
   }
@@ -380,7 +402,8 @@
   function buildPrintBlock(d){
     var tanggal = printDateNow();
     var rows = d.siswa.map(function(s){
-      return '<tr><td class="print-no">' + String(s.no).padStart(2,'0') + '</td><td>' + escapeHtml(s.nama) + '</td></tr>';
+      var v = getPoin(d.kelas, s.nama);
+      return '<tr><td class="print-no">' + String(s.no).padStart(2,'0') + '</td><td>' + escapeHtml(s.nama) + '</td><td class="print-poin">' + (v !== null ? v : '–') + '</td></tr>';
     }).join('');
 
     return (
@@ -392,7 +415,7 @@
         '<h1 class="print-title">Daftar Siswa Kelas ' + escapeHtml(d.kelas) + '</h1>' +
         '<p class="print-sub">Tahun Ajaran 2026/2027 &middot; Dicetak ' + tanggal + '</p>' +
         '<table class="print-table">' +
-          '<thead><tr><th>No.</th><th>Nama Siswa</th></tr></thead>' +
+          '<thead><tr><th>No.</th><th>Nama Siswa</th><th>Rata&sup2; Poin</th></tr></thead>' +
           '<tbody>' + rows + '</tbody>' +
         '</table>' +
         '<div class="print-foot">' +

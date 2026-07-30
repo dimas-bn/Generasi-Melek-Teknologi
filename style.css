@@ -549,6 +549,18 @@ main, header, footer{position:relative; z-index:2;}
   padding:8px 4px; border-bottom:1px solid var(--line);
 }
 .modal__table .col-no{width:56px;}
+.modal__table .col-poin{width:88px; text-align:right;}
+.modal__table td.col-poin{text-align:right;}
+
+.poin-badge{
+  display:inline-block; min-width:34px; text-align:center;
+  font-family:var(--font-mono); font-size:.78rem; font-weight:600;
+  padding:3px 9px; border-radius:999px; border:1px solid var(--line);
+}
+.poin-badge--none{color:var(--text-low); border-color:var(--line);}
+.poin-badge--mid{color:var(--text-hi); border-color:var(--line); background:var(--bg-elevated);}
+.poin-badge--high{color:var(--bg-deep); background:var(--teal); border-color:var(--teal);}
+.poin-badge--low{color:var(--bg-deep); background:var(--amber); border-color:var(--amber);}
 .modal__table tbody td{
   padding:10px 4px; border-bottom:1px solid var(--line-soft);
   font-size:.92rem;
@@ -633,6 +645,8 @@ main, header, footer{position:relative; z-index:2;}
     font-size:12.5px; padding:6px 6px; border-bottom:1px solid #ccc;
   }
   .print-table td.print-no{ width:40px; color:#666; font-family:'JetBrains Mono', monospace; font-size:11px; }
+  .print-table td.print-poin{ width:70px; text-align:right; font-family:'JetBrains Mono', monospace; font-size:11.5px; color:#333; }
+  .print-table th:last-child{ text-align:right; }
 
   .print-foot{ display:flex; justify-content:space-between; align-items:flex-end; margin-top:10px; }
   .print-foot__count{ font-size:11px; color:#555; }
