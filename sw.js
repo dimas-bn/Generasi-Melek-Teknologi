@@ -2,13 +2,14 @@
 // Cache-first untuk aset inti, network-first untuk navigasi (biar data selalu segar
 // saat online, tapi tetap bisa dibuka saat offline dari cache terakhir).
 
-const CACHE_VERSION = 'geletek-v1';
+const CACHE_VERSION = 'geletek-v2';
 const CORE_ASSETS = [
   './',
   './index.html',
   './style.css',
   './script.js',
   './data.js',
+  './poin.js',
   './manifest.json',
   './icons/icon-192.png',
   './icons/icon-512.png',

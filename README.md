@@ -14,11 +14,37 @@ geletek/
 ├── style.css       # tema visual (dark, futuristik)
 ├── script.js       # logika interaktif (grid kelas, jaringan SVG, pencarian, modal)
 ├── data.js         # data siswa per kelas (sumber: file Excel yang diunggah)
+├── poin.js         # rekap poin siswa (sumber: aplikasi Jurnal Mengajar — update manual)
+├── manifest.json   # identitas PWA
+├── sw.js           # service worker (offline)
+├── pwa.js          # pop-up ajakan instalasi PWA
+├── icons/          # ikon aplikasi PWA
 └── vercel.json     # konfigurasi ringan untuk deploy Vercel
 ```
 
 Situs ini **statis murni** (HTML/CSS/JS biasa) — tidak butuh proses build,
-server, atau database. Semua data dimuat langsung dari `data.js`.
+server, atau database. Semua data dimuat langsung dari `data.js` dan `poin.js`.
+
+⚠️ **Semua file di atas wajib ikut ter-upload** setiap kali deploy ulang —
+jangan hanya sebagian, karena `index.html` mereferensikan semuanya lewat
+tag `<script>`. Kalau ada salah satu file yang tertinggal atau tertimpa versi
+lama, fitur terkait file itu akan hilang dari tampilan meski datanya sendiri
+masih aman tersimpan di repo.
+
+## Rekap Poin (dari aplikasi Jurnal Mengajar)
+
+`poin.js` berisi rata-rata poin tiap siswa, terpisah dari `data.js` supaya
+mudah diperbarui manual tanpa menyentuh data induk. Isinya tampil sebagai:
+- kolom **"Poin"** di tabel detail siswa (dalam modal kelas)
+- badge rata-rata poin di setiap kartu kelas (halaman utama)
+- ikut tersalin lewat tombol **Salin Data**
+- ikut tercetak di **Cetak / PDF** (plus rata-rata kelas di subjudul)
+- ikut tampil di hasil **Cari Siswa** lintas kelas
+
+**Cara update poin:** buka `poin.js`, cari kelas & nama siswa (harus persis
+sama ejaannya dengan di `data.js`, besar-kecil huruf tidak masalah), lalu
+ubah angkanya. Siswa yang belum diisi otomatis tampil sebagai "–". Skala
+nilai default 0–7 sesuai poin per pertemuan di Jurnal Mengajar.
 
 ## PWA (Progressive Web App)
 
@@ -87,6 +113,9 @@ tidak perlu mengubah `index.html`, `style.css`, maupun `script.js`.
   kelima kelas ke inti GELETEK — tidak ada satu kelas yang menetap di posisi atas
 - Detail siswa per kelas (nomor presensi + nama) dalam modal, lengkap
   dengan kotak pencarian di dalam kelas tersebut
+- **Rekap Poin** — kolom poin per siswa (dari aplikasi Jurnal Mengajar) di
+  tabel detail kelas, plus badge rata-rata poin di tiap kartu kelas
+  (lihat bagian Rekap Poin di atas)
 - **Salin data** — salin daftar siswa (atau hasil pencarian) satu kelas ke clipboard sekali klik
 - **Pengacak nama** — tab khusus di dalam tiap modal kelas untuk memilih siswa
   secara acak (misalnya untuk sesi tanya jawab). Bisa diatur "tanpa pengulangan"

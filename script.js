@@ -9,6 +9,35 @@
   function isXII(kelas){ return kelas.indexOf('XII') === 0; }
   function slug(kelas){ return kelas.replace(/\s+/g,'').replace(/-/g,'').toLowerCase(); }
 
+  /* ---------------- Rekap Poin (Aplikasi Jurnal Mengajar) ---------------- */
+  // GELETEK_POIN didefinisikan di poin.js — dibuat opsional (guard) supaya
+  // halaman tetap jalan normal walau poin.js belum/terlambat dimuat.
+  var POIN_DATA = (typeof GELETEK_POIN !== 'undefined') ? GELETEK_POIN : {};
+
+  function getPoin(kelas, nama){
+    var kelasPoin = POIN_DATA[kelas];
+    if(!kelasPoin) return null;
+    var val = kelasPoin[nama];
+    if(val === undefined || val === null) return null;
+    return val;
+  }
+
+  function formatPoin(val){
+    if(val === null || val === undefined) return '&ndash;';
+    var n = Number(val);
+    if(isNaN(n)) return '&ndash;';
+    return (n % 1 === 0) ? String(n) : n.toFixed(1);
+  }
+
+  function classAveragePoin(d){
+    var vals = d.siswa
+      .map(function(s){ return getPoin(d.kelas, s.nama); })
+      .filter(function(v){ return v !== null; });
+    if(vals.length === 0) return null;
+    var sum = vals.reduce(function(a,b){ return a + Number(b); }, 0);
+    return sum / vals.length;
+  }
+
   /* ---------------- Hero stats ---------------- */
   function renderStats(){
     var totalSiswa = DATA.reduce(function(a,d){ return a + d.siswa.length; }, 0);
@@ -31,6 +60,10 @@
     grid.innerHTML = DATA.map(function(d, i){
       var xii = isXII(d.kelas);
       var idx = String(i+1).padStart(2,'0');
+      var avg = classAveragePoin(d);
+      var avgBadge = (avg !== null)
+        ? '<span class="class-card__poin" title="Rata-rata poin kelas (Jurnal Mengajar)">&#9733; ' + formatPoin(avg) + '</span>'
+        : '';
       return (
         '<button class="class-card" data-index="' + i + '" data-kelas="' + d.kelas + '">' +
           '<div class="class-card__top">' +
@@ -39,7 +72,7 @@
           '</div>' +
           '<h3 class="class-card__name">' + d.kelas + '</h3>' +
           '<div class="class-card__foot">' +
-            '<span><span class="class-card__count">' + d.siswa.length + '</span> siswa</span>' +
+            '<span><span class="class-card__count">' + d.siswa.length + '</span> siswa' + (avgBadge ? ' &middot; ' + avgBadge : '') + '</span>' +
             '<span class="class-card__arrow">' +
               '<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 12H19M19 12L13 6M19 12L13 18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>' +
             '</span>' +
@@ -191,7 +224,11 @@
     } else {
       emptyEl.hidden = true;
       tbody.innerHTML = list.map(function(s){
-        return '<tr><td class="col-no">' + String(s.no).padStart(2,'0') + '</td><td class="col-nama">' + highlight(s.nama, q) + '</td></tr>';
+        var poin = getPoin(d.kelas, s.nama);
+        var poinCell = '<td class="col-poin">' +
+          (poin !== null ? '<span class="poin-badge">' + formatPoin(poin) + '</span>' : '<span class="poin-badge poin-badge--empty">&ndash;</span>') +
+          '</td>';
+        return '<tr><td class="col-no">' + String(s.no).padStart(2,'0') + '</td><td class="col-nama">' + highlight(s.nama, q) + '</td>' + poinCell + '</tr>';
       }).join('');
     }
     countEl.textContent = list.length + ' / ' + d.siswa.length + ' siswa';
@@ -206,7 +243,9 @@
       ''
     ];
     currentVisibleList.forEach(function(s){
-      lines.push(s.no + '. ' + s.nama);
+      var poin = getPoin(d.kelas, s.nama);
+      var poinText = poin !== null ? ' (Poin: ' + formatPoin(poin).replace('&ndash;','-') + ')' : '';
+      lines.push(s.no + '. ' + s.nama + poinText);
     });
     return lines.join('\n');
   }
@@ -380,8 +419,12 @@
   function buildPrintBlock(d){
     var tanggal = printDateNow();
     var rows = d.siswa.map(function(s){
-      return '<tr><td class="print-no">' + String(s.no).padStart(2,'0') + '</td><td>' + escapeHtml(s.nama) + '</td></tr>';
+      var poin = getPoin(d.kelas, s.nama);
+      var poinCell = '<td class="print-poin">' + formatPoin(poin) + '</td>';
+      return '<tr><td class="print-no">' + String(s.no).padStart(2,'0') + '</td><td>' + escapeHtml(s.nama) + '</td>' + poinCell + '</tr>';
     }).join('');
+    var avg = classAveragePoin(d);
+    var avgText = (avg !== null) ? ' &middot; Rata-rata poin: ' + formatPoin(avg) : '';
 
     return (
       '<div class="print-block">' +
@@ -390,9 +433,9 @@
           '<div class="print-meta">SMA Negeri 1 Baturetno<br>Informatika &middot; Koding dan Kecerdasan Artifisial (KKA)</div>' +
         '</div>' +
         '<h1 class="print-title">Daftar Siswa Kelas ' + escapeHtml(d.kelas) + '</h1>' +
-        '<p class="print-sub">Tahun Ajaran 2026/2027 &middot; Dicetak ' + tanggal + '</p>' +
+        '<p class="print-sub">Tahun Ajaran 2026/2027 &middot; Dicetak ' + tanggal + avgText + '</p>' +
         '<table class="print-table">' +
-          '<thead><tr><th>No.</th><th>Nama Siswa</th></tr></thead>' +
+          '<thead><tr><th>No.</th><th>Nama Siswa</th><th class="print-poin">Poin</th></tr></thead>' +
           '<tbody>' + rows + '</tbody>' +
         '</table>' +
         '<div class="print-foot">' +
@@ -488,10 +531,15 @@
     }
 
     resultsEl.innerHTML = matches.slice(0, 60).map(function(m, i){
+      var poin = getPoin(m.kelas, m.nama);
+      var poinHtml = (poin !== null)
+        ? '<span class="result-row__poin">' + formatPoin(poin) + '</span>'
+        : '<span class="result-row__poin result-row__poin--empty">&ndash;</span>';
       return (
         '<div class="result-row" style="animation-delay:' + Math.min(i*20,300) + 'ms">' +
           '<span class="result-row__no">' + String(m.no).padStart(2,'0') + '</span>' +
           '<span class="result-row__name">' + highlight(m.nama, q) + '</span>' +
+          poinHtml +
           '<span class="result-row__class">' + m.kelas + '</span>' +
         '</div>'
       );
