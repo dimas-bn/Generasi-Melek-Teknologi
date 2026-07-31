@@ -20,6 +20,40 @@ geletek/
 Situs ini **statis murni** (HTML/CSS/JS biasa) — tidak butuh proses build,
 server, atau database. Semua data dimuat langsung dari `data.js`.
 
+## PWA (Progressive Web App)
+
+GELETEK bisa dipasang seperti aplikasi biasa ke HP atau laptop.
+
+**File-file terkait:**
+```
+manifest.json    # identitas & ikon aplikasi
+sw.js            # service worker — bikin situs bisa dibuka offline
+pwa.js           # registrasi service worker + pop-up ajakan instalasi
+icons/           # ikon aplikasi (192px, 512px, maskable, apple-touch-icon)
+```
+
+**Cara kerja pop-up instalasi:**
+- **Android / Chrome & Edge desktop** — begitu browser mendeteksi situs ini
+  memenuhi syarat PWA, muncul banner "Pasang GELETEK di perangkat ini" di
+  bagian bawah layar dengan tombol **Instal** dan **Nanti Saja**.
+- **iPhone/iPad (Safari)** — karena iOS tidak mendukung pop-up instalasi
+  otomatis, muncul banner berisi instruksi manual: *"Ketuk tombol Bagikan,
+  lalu pilih Tambah ke Layar Utama"*.
+- Kalau ditekan **Nanti Saja**, banner tidak akan muncul lagi selama 7 hari
+  (disimpan di penyimpanan lokal perangkat, bukan di server).
+- Banner tidak akan muncul sama sekali jika situs sudah terpasang sebagai
+  aplikasi (terdeteksi otomatis).
+
+**Offline:** setelah dibuka sekali secara online, `service worker` menyimpan
+salinan halaman dan data siswa di perangkat, sehingga GELETEK tetap bisa
+dibuka meski tidak ada koneksi internet (menampilkan data hasil sinkronisasi
+terakhir).
+
+**Catatan saat deploy:** semua file di atas (`manifest.json`, `sw.js`, `pwa.js`,
+folder `icons/`) harus ikut ter-upload ke Vercel di root folder yang sama
+dengan `index.html` — jangan dipisah ke folder lain, karena path di dalam
+`index.html` dan `manifest.json` bersifat relatif.
+
 ## Cara deploy ke Vercel (domain geletek.vercel.app)
 
 **Opsi A — lewat Vercel CLI (paling cepat)**
@@ -61,6 +95,9 @@ tidak perlu mengubah `index.html`, `style.css`, maupun `script.js`.
   dan tombol "Cetak Semua Kelas" di halaman utama (kelima kelas sekaligus, satu
   kelas per halaman). Memakai dialog cetak bawaan browser — pilih "Save as PDF"
   di sana untuk mengunduh sebagai file PDF, atau kirim langsung ke printer
+- **PWA (Progressive Web App)** — bisa dipasang ke layar utama HP/desktop seperti
+  aplikasi native, tetap bisa dibuka saat offline (memakai data terakhir yang
+  tersimpan), dan muncul pop-up ajakan pasang otomatis (lihat bagian PWA di bawah)
 - Pencarian nama lintas seluruh kelas dari satu kotak pencarian
 - Sepenuhnya responsif (desktop, tablet, mobile) dan mendukung
   `prefers-reduced-motion`

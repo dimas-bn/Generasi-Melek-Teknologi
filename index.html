@@ -8,6 +8,15 @@
 
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2222%22 fill=%22%23070A12%22/><path d=%22M50 18 L78 34 V66 L50 82 L22 66 V34 Z%22 fill=%22none%22 stroke=%22%2345E8D2%22 stroke-width=%224%22/><circle cx=%2250%22 cy=%2250%22 r=%228%22 fill=%22%2345E8D2%22/></svg>">
 
+<!-- PWA -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#05070C">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="GELETEK">
+<meta name="mobile-web-app-capable" content="yes">
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -221,7 +230,6 @@
             <tr>
               <th class="col-no">No.</th>
               <th class="col-nama">Nama Siswa</th>
-              <th class="col-poin">Rata² Poin</th>
             </tr>
           </thead>
           <tbody id="modal-tbody"></tbody>
@@ -264,7 +272,7 @@
 <div id="print-sheet" aria-hidden="true"></div>
 
 <script src="data.js"></script>
-<script src="poin.js"></script>
 <script src="script.js"></script>
+<script src="pwa.js"></script>
 </body>
 </html>
