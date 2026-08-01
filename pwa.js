@@ -111,6 +111,13 @@
   }
 
   function init(){
+    // Mode bantu-uji: buka URL dengan ?resetpwa=1 untuk menghapus status
+    // "Nanti Saja" sebelumnya, supaya pop-up bisa ditawarkan lagi tanpa
+    // harus hapus data browser manual.
+    if(/[?&]resetpwa=1/.test(window.location.search)){
+      clearDismissed();
+    }
+
     // Registrasi service worker
     if('serviceWorker' in navigator){
       window.addEventListener('load', function(){
