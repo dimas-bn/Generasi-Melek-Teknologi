@@ -200,7 +200,9 @@ main, header, footer{position:relative; z-index:2;}
 
 .section__head--with-action{
   display:flex; align-items:flex-start; justify-content:space-between; gap:24px; flex-wrap:wrap;
+  margin-bottom:36px;
 }
+.section__head--with-action .section__desc{margin-bottom:0;}
 .print-all-btn{
   display:flex; align-items:center; gap:8px; flex:none;
   background:var(--bg-panel); border:1px solid var(--line);
@@ -751,7 +753,7 @@ main, header, footer{position:relative; z-index:2;}
     bottom:14px;
   }
   .install-banner__actions{
-    flex-direction:row; width:100%; margin-left:58px;
+    flex-direction:row; width:calc(100% - 58px); margin-left:58px;
   }
   .install-banner__btn{flex:1;}
 }
