@@ -70,6 +70,14 @@ icons/           # ikon aplikasi (192px, 512px, maskable, apple-touch-icon)
 - Banner tidak akan muncul sama sekali jika situs sudah terpasang sebagai
   aplikasi (terdeteksi otomatis).
 
+**Kalau ingin memicu ulang pop-up untuk uji coba** (misalnya sudah pernah
+ditekan "Nanti Saja"), buka: `https://geletek.vercel.app/?resetpwa=1` — status
+"pernah ditolak" akan otomatis terhapus dari perangkat itu. Cara ini tidak
+akan menampilkan banner kalau situsnya memang **sudah terpasang** sebagai
+aplikasi di perangkat tersebut — itu sudah sesuai desain, bukan bug (untuk
+menguji dari kondisi benar-benar baru, coba buka lewat jendela
+Incognito/Penyamaran, atau uninstall dulu aplikasinya).
+
 **Offline:** setelah dibuka sekali secara online, `service worker` menyimpan
 salinan halaman dan data siswa di perangkat, sehingga GELETEK tetap bisa
 dibuka meski tidak ada koneksi internet (menampilkan data hasil sinkronisasi
