@@ -185,7 +185,7 @@
 
   /* ---------------- Modal ---------------- */
   var currentIndex = 0;
-  var overlay, modalTitle, modalEyebrow, tbody, countEl, emptyEl, modalSearch, copyBtn, copyLabel;
+  var overlay, modalTitle, modalEyebrow, tbody, countEl, emptyEl, modalSearch, copyBtn, copyLabel, copyMenu;
   var currentVisibleList = [];
   var copyResetTimer = null;
 
@@ -235,8 +235,11 @@
     resetCopyState();
   }
 
-  function buildCopyText(){
+  function buildCopyText(mode){
     var d = DATA[currentIndex];
+    if(mode === 'names'){
+      return currentVisibleList.map(function(s){ return s.nama; }).join('\n');
+    }
     var lines = [
       'GELETEK — Daftar Siswa Kelas ' + d.kelas,
       'SMA Negeri 1 Baturetno — T.A. 2026/2027',
@@ -256,10 +259,11 @@
       copyBtn.classList.remove('is-copied');
       copyLabel.textContent = 'Salin Data';
     }
+    if(copyMenu && copyBtn && copyBtn.getAttribute('aria-expanded') === 'true') closeCopyMenu();
   }
 
-  function copyClassData(){
-    var text = buildCopyText();
+  function copyClassData(mode){
+    var text = buildCopyText(mode);
     var done = function(){
       copyBtn.classList.add('is-copied');
       copyLabel.textContent = 'Tersalin ✓';
@@ -295,6 +299,32 @@
       document.body.removeChild(ta);
       return ok;
     }catch(e){ return false; }
+  }
+
+  /* ---------------- Menu dropdown "Salin Data" ---------------- */
+  function openCopyMenu(){
+    copyMenu.hidden = false;
+    copyMenu.classList.remove('align-left');
+    // deteksi tabrakan: kalau menu meluber ke kiri modal, geser anchor ke kiri tombol
+    var modalEl = overlay.querySelector('.modal');
+    var menuRect = copyMenu.getBoundingClientRect();
+    var modalRect = modalEl ? modalEl.getBoundingClientRect() : { left: 0 };
+    if(menuRect.left < modalRect.left + 8){
+      copyMenu.classList.add('align-left');
+    }
+    requestAnimationFrame(function(){ copyMenu.classList.add('is-open'); });
+    copyBtn.setAttribute('aria-expanded', 'true');
+  }
+
+  function closeCopyMenu(){
+    copyMenu.classList.remove('is-open');
+    copyBtn.setAttribute('aria-expanded', 'false');
+    setTimeout(function(){ copyMenu.hidden = true; }, 180);
+  }
+
+  function toggleCopyMenu(){
+    var isOpen = copyBtn.getAttribute('aria-expanded') === 'true';
+    if(isOpen) closeCopyMenu(); else openCopyMenu();
   }
 
   /* ---------------- Tab switching ---------------- */
@@ -561,6 +591,7 @@
     modalSearch = document.getElementById('modal-search');
     copyBtn = document.getElementById('modal-copy');
     copyLabel = document.getElementById('modal-copy-label');
+    copyMenu = document.getElementById('copy-menu');
 
     tabList = document.getElementById('tab-list');
     tabPicker = document.getElementById('tab-picker');
@@ -581,7 +612,23 @@
     pickerResetBtn.addEventListener('click', resetPicker);
     pickerNoRepeat.addEventListener('change', renderPicker);
 
-    copyBtn.addEventListener('click', copyClassData);
+    copyBtn.addEventListener('click', function(e){
+      e.stopPropagation();
+      toggleCopyMenu();
+    });
+    document.getElementById('copy-menu-full').addEventListener('click', function(){
+      closeCopyMenu();
+      copyClassData('full');
+    });
+    document.getElementById('copy-menu-names').addEventListener('click', function(){
+      closeCopyMenu();
+      copyClassData('names');
+    });
+    document.addEventListener('click', function(e){
+      if(copyBtn.getAttribute('aria-expanded') === 'true' && !copyMenu.contains(e.target) && e.target !== copyBtn){
+        closeCopyMenu();
+      }
+    });
 
     document.getElementById('modal-print').addEventListener('click', printCurrentClass);
     var printAllBtn = document.getElementById('print-all-btn');
@@ -592,7 +639,10 @@
       if(e.target === overlay) closeModal();
     });
     document.addEventListener('keydown', function(e){
-      if(e.key === 'Escape') closeModal();
+      if(e.key === 'Escape'){
+        if(copyBtn && copyBtn.getAttribute('aria-expanded') === 'true'){ closeCopyMenu(); return; }
+        closeModal();
+      }
     });
     modalSearch.addEventListener('input', function(){
       renderModalTable(modalSearch.value);
