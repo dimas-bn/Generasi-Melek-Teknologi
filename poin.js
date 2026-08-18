@@ -1,211 +1,67 @@
 // ============================================================
-// GELETEK — Data Rata-rata Poin Siswa (dari aplikasi Jurnal Mengajar)
+// GELETEK — Data Rata-rata Poin Siswa (LIVE dari Jurnal Mengajar Online Berbayar)
 // ============================================================
-// File ini SENGAJA dipisah dari data.js supaya gampang diupdate manual
-// tanpa harus menyentuh data.js (yang tampaknya di-generate ulang dari
-// sumber lain).
+// Versi ini TIDAK LAGI diisi manual. Data poin diambil otomatis lewat
+// koneksi publik (read-only) ke Supabase milik JMO Berbayar, memakai
+// token_publik masing-masing kelas. Setiap kali guru mengisi jurnal &
+// poin di JMO, angka di sini akan ikut ter-update otomatis begitu
+// halaman GELETEK dibuka/dimuat ulang.
 //
-// CARA UPDATE:
-// 1. Buka aplikasi Jurnal Mengajar → tab "Rekap" → pilih kelas & bulan.
-// 2. Lihat kolom "Rata² Poin" di tabelnya.
-// 3. Salin angkanya ke sini, sesuai nama kelas & nama siswa PERSIS SAMA
-//    dengan yang ada di data.js (huruf besar/kecil tidak masalah, tapi
-//    ejaan harus sama).
-// 4. Siswa yang belum diisi di sini otomatis tampil sebagai "–" di GELETEK
-//    (tidak perlu isi semua sekaligus, boleh bertahap per kelas).
-//
-// Format nilai: angka 0–7 (boleh desimal, misal 4.3), sesuai skala poin
-// di Jurnal Mengajar (default 3, minimum 0, maksimum 7 per pertemuan).
+// TIDAK PERLU update manual lagi. Kalau ada kelas baru atau token
+// berubah, cukup update objek TOKEN_KELAS di bawah ini.
 // ============================================================
 
-const GELETEK_POIN = {
-  "XI - 7": {
-    "AINI FAKHIRA GHASSANI": 3,
-    "ALAN AGSTAFA RAMADHAN": 3.1,
-    "ALDHE MOHAMAD SHALFI": 3,
-    "ANJAR NUR SAFITRI": 3,
-    "AULIA PUTRI NURRAMADHANI": 3,
-    "BINTANG SATRIA BHAKTI": 3.2,
-    "DARA VICTORIA SESYA": 3.6,
-    "DEWI NURCAHYANINGRUM": 3.2,
-    "DZAKIYAH TALITA ANENTY": 3.5,
-    "ESTHI SHINTA CHAERANI": 3.2,
-    "FIRDHA FEBRIANA": 3,
-    "GABRILLYA YULIANA WIBAWA": 3.1,
-    "GINUBAH SURANTI": 3.2,
-    "JELITA ANGELINA": 3.2,
-    "KAILA AURA TRIDAMA": 3.5,
-    "KAMANALU RAMADHAN ABHISEKA": 3.2,
-    "KEISYA YUANITA RAHMAWATI": 3,
-    "KEYSHA NANDITA PUTRI": 3,
-    "KINTAN AYUMI PUTRI": 3.1,
-    "LINTANG ASSYIFA ASRININGTYAS": 3.2,
-    "LOVINA PRICELLYA NOVIANTIE": 3,
-    "LUTFIYAH REGHINA ANDRIYANI": 3,
-    "MAYZA RAHAYU NINGTYAS": 3.3,
-    "MEYZILA PRATIWI UTOMO": 3.3,
-    "NADIA KESYA LUNIKA": 3.7,
-    "NOVIA ELDA AYU RAHMAH": 3,
-    "NOVYAN RIZQY PUTRA PRATAMA": 3,
-    "NYDIA SEKAR GARIZAH": 3.2,
-    "REYHANUM ZELIYA NOVANTI": 3.3,
-    "SEKAR AYUNINGTYAS": 3.2,
-    "SEKAR NUGRAHANI DEWI TITISARI": 3.1,
-    "SHINTIA AURA PUTRI": 3.5,
-    "SITI MUSLIMAH": 3.3,
-    "SYIFA RARA TUNGGA": 3.2,
-    "YOGA WIRANATA": 3.1,
-    "YUKHA IMAN UEIL": 3.1,
-  },
-  "XI - 8": {
-    "ADINDA NASYWA SALSABILA": 3.3,
-    "ADZKIA RIZKY AULIYAH": 3.3,
-    "AIRA KHIRANIAVISTA RIZKY EKSHANANDA": 3.3,
-    "ALIFAH HASNA HUWAIDAH": 3.5,
-    "ANINDYA QUEENSHA MAHARDIKA": 3.2,
-    "ARETA NUR CALLYSTA PUTRI": 3.5,
-    "AZ ZAHRA BELLA OKTAVIANI": 3.3,
-    "CORNELLIA JANICE REVANNITA": 3.3,
-    "DANANG WISNU MURTI": 3.5,
-    "DIMAS ADLI AIDAN": 3.3,
-    "DIVANDA OKTAVIANNA": 3.3,
-    "ELYSA NUR OKTAVIA": 3.2,
-    "FADHIL ZAIDAN ARDIANSYAH": 3.3,
-    "FEEBRYOLA PRATAMA": 3.2,
-    "FRANSISKA DWI ARIYANTI": 3.4,
-    "GATAYU DYAH DANASTRI": 3.4,
-    "GIOVANNI DINDA RAISYA": 3.6,
-    "HABIB BRIYAN PRASETYA": 3.4,
-    "HAFIZHAH WIDYA RAHMAWATI": 3.2,
-    "JENIFER KARTIKA SAPUTRI": 3.4,
-    "KELVIN ERDIANTO": 3.3,
-    "MISHEL SHAISTAMINATUS JULIANSHAH NOOR": 3.2,
-    "NABILLA NUR AVIFA SETIONINGSIH": 3.4,
-    "NATASYA ABELLA SYAFITRI MAHARANI": 3.3,
-    "NEISKA AURELIASYAFA JUNATRIA": 3.4,
-    "NESYA LISTIYANTO PUTRI": 3.4,
-    "NIDYA ELSAVANIA": 3.4,
-    "NONIK KINANTI": 3.5,
-    "RAFA DWI NUGROHO": 3.2,
-    "RAFASYA NAURA AQILLA": 3.3,
-    "RANGGA DWI APRIYANTO PUTRA": 3.3,
-    "SELLANIA PUTRI RAMADHANI": 3.5,
-    "SHEPTIA FITRI ASTUTI": 3.6,
-    "SYAHFA FRESTY SALSABILA": 3.3,
-    "VINSENSIUS KAROL RIVALDI": 3.4,
-    "ZIDANE ANDYA DARMAWAN": 3.4,
-  },
-  "XII - 5": {
-    "AFFAN CAHYA WILDANDHIKA": 3.2,
-    "AISYAH LILA RAIHANAH": 3.2,
-    "AMALINA ULYA HIKMA": 3.2,
-    "AMAR MUSTAQIM": 3.2,
-    "ARIFATUTSANI FAUZIYAH": 3.2,
-    "AYRA MESSYANDRA": 3.1,
-    "BRILLIANT DZAKY HARTANTO": 3.2,
-    "DEWI WULANDARI": 3.2,
-    "DHIMAS HERDIANSYAH": 3.2,
-    "DILLA ANGGITA PUTRI": 3.2,
-    "DWI OKTAVIANI": 3.2,
-    "EKA WIDYASARI": 3.2,
-    "ELFIRA NABIL SAPUTRI": 3.2,
-    "ERVIANA TASYA RAMADHANI": 3.1,
-    "ESTI NOVA ARAYA": 3.1,
-    "FADHLY FAJRI AZIZI": 3.2,
-    "FAHRENO DIYAN ROZAQI": 3.1,
-    "FAKHRUNISA ALYA PUTRI ARIYANTO": 3.1,
-    "FARROS EVANDOYO": 3.2,
-    "GILANG ANGGA KUSUMA": 3,
-    "HANIA ALGIO VIANDANI": 3.2,
-    "KHEYLA AGISTA LORENZA": 3.1,
-    "LULU DESTYA DZULHIJJAH": 3.2,
-    "MUHAMMAD ARTA RAFI'I": 3.2,
-    "MUSLIMAH USWATUN KHASANAH": 3.1,
-    "NABIL TASRIFA": 3.2,
-    "NADIA KHOIRIYAH PARAMITHA": 3.1,
-    "NUR PUTRI WIDYAWATI": 3.1,
-    "REFINA ANGGI PAMUJI": 3.1,
-    "REGITA AURELIA PUTRI": 3.1,
-    "REUMNESSA HANI RIFATUL ULAA": 3.2,
-    "SELVINA FEBRIA PUTRI": 3.3,
-    "SEPTIKA SUCI KHORIZENNA": 3.1,
-    "VANIA DINDA DESIANTI": 3.2,
-    "ZANETA NURIL ADSKIYAH": 3.1,
-    "ZULFA RAHMI QURATU AINI": 3.2,
-  },
-  "XII - 6": {
-    "ADITYA ARSHA SAPUTRA": 2.4,
-    "AGENG RIZKY NUGROHO": 2.6,
-    "ANISA KIKI PRATAMA": 3.1,
-    "ARDIO ARGA DEWASA": 3.2,
-    "ARI TRI ASTUTI": 3.2,
-    "AURA LIESTA NUGRAHENI": 3.1,
-    "CORNELIA FINELLA PRAMONO": 3.2,
-    "DIAH TRI ASTUTI": 3.2,
-    "DINDA TIARA PUTRI": 3.2,
-    "ERSA BAYU MUSTOFA": 3.3,
-    "FARISH AL ZUBAIR": 3.1,
-    "FARREL ADI SAPUTRA": 3.2,
-    "KANEISHIA LATHIFA ZAHRA": 3.2,
-    "KHANSA SYAKIRA AZZAHRA": 3.3,
-    "LUTHFI ABDUR ROHMAN": 3.4,
-    "MARSHA DWIYANTI": 3.3,
-    "MUTIA ZELVISCA": 3.6,
-    "NADA SALSABILA YUANA": 3.3,
-    "NAGITA QUEEN JULIAN SAFITRI": 3.2,
-    "NATASYA AMELIA": 3.3,
-    "NIKEN SALINDRI": 3.6,
-    "NIKO YULIAN WIBI PANGESTU": 3.2,
-    "OLIVIA JASMINE NOORJANAH": 3.3,
-    "PAULA RAHMAWATI": 3.1,
-    "SEPTIYA ARUM DANI": 3.2,
-    "SHAFA SALSABILA AISYAH": 3.1,
-    "SHAFIRA AVRISCA": 3.3,
-    "SHALSABILA AYUNDA KASIH": 3.2,
-    "SHOFIA NAJIYAH": 3.3,
-    "SYIFA EKA NUR AINI": 3.1,
-    "TALITHA MAHESWARI": 3.2,
-    "TRISNA CARISSA MAHESWARI": 3.3,
-    "UTIYA QOSYIROTUL HANIFAH": 3.6,
-    "VENY NURSAYEKTI": 3.3,
-    "YUSUF ALFIANSYAH": 3.2,
-    "ZALFA AKDISYA PUTRI": 3.2,
-  },
-  "XII - 7": {
-    "ABIZAR AJI PAMUNGKAS": 3.6,
-    "ADITIYA ILHAM SAPUTRA": 3.2,
-    "AULIA ALYA SAPUTRI": 3.3,
-    "BASTIAN BARRU DAMAIS": 3.1,
-    "DEWANTI AYU ATMAJA": 3.3,
-    "ELFARESYA YAY ORQUEDA": 3.7,
-    "ELIESYA ANGGUN SETYAWATI": 3.1,
-    "FABIAN RAMADHANI": 3.1,
-    "FIRSTY SALSABILA CAHYANI": 3.1,
-    "GALIH WIDYAWATI SUDARMANTO": 3.2,
-    "GALUH DHARMAYANTI SUDARMANTO": 3.3,
-    "GANDHUNG SULISTYO WIBOWO": 3.2,
-    "GEA ADILA PUTRI": 3.9,
-    "GREGORIUS GRADY ARSENIO LEON": 3.2,
-    "HELGA MAYZA BRILIANTI": 3.2,
-    "HESTI HASWONING": 3.9,
-    "KESYA CAHYANINGSIH": 3.2,
-    "KEYSA YULIA DIMARAGATE": 3.2,
-    "KIRANA GLORIA MAXI": 3.3,
-    "MAYA IVANA NASTYA DAMAYANTI": 3.1,
-    "MUHAMMAD AFRIZAL SAPUTRA": 3.1,
-    "MUTIARA KASIH": 3.2,
-    "NABILA ISNA SALMA": 3.3,
-    "NAZILA TURROHMAH": 3.2,
-    "PANCA NUR KHASANAH": 3.2,
-    "PRYTHA CAHYA SUCI KIRANA": 3.2,
-    "REGA HUDA PERMADI": 3.1,
-    "REVI DIANDRA SANTAMA": 3.2,
-    "RIZKI ANANTA RAMADHAN": 3.2,
-    "SAGITA MARSIA ANDINI": 3.2,
-    "SEVIA PRAKASIWI": 3.2,
-    "TITIS LUSIANA DEWI SAPUTRI": 3.2,
-    "VERLITA DWI ANGGRAINI": 3.1,
-    "ZAHRA ASHIFA": 3.2,
-    "ZASKIYA HAMMIDAH": 3.2,
-  }
+const SUPABASE_URL_GELETEK = "https://eziszpzxszxurvqcsikj.supabase.co";
+const SUPABASE_ANON_KEY_GELETEK = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6aXN6cHp4c3p4dXJ2cWNzaWtqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYyNjMzNTYsImV4cCI6MjEwMTgzOTM1Nn0.q9YdOK9ph_WqDYhPfNVTqTVdKuMPLPFLicLBsOg5ivQ";
+
+// Nama kelas (harus PERSIS SAMA dengan yang ada di data.js) -> token_publik dari JMO Berbayar
+const TOKEN_KELAS = {
+  "XI - 7": "caa20e62-16c6-49e4-b50e-7b4b3ec8962b",
+  "XI - 8": "070a21c5-1bf3-40ae-bea1-3920afccd13d",
+  "XII - 5": "12e02180-ceb1-468e-9e26-736a0303f239",
+  "XII - 6": "86ebe232-8425-4ee8-8ac8-7cdfaa5089e9",
+  "XII - 7": "cf8f92db-8e58-49f9-b87b-0465b603c3ed"
 };
+
+// Objek ini yang dibaca oleh script.js — mulai kosong, diisi otomatis oleh fetch di bawah.
+// Karena ini OBJECT (bukan angka/teks), script.js yang sudah membaca referensinya
+// akan otomatis "melihat" data begini terisi begitu fetch selesai (tidak perlu reload).
+const GELETEK_POIN = {
+  "XI - 7": {},
+  "XI - 8": {},
+  "XII - 5": {},
+  "XII - 6": {},
+  "XII - 7": {}
+};
+
+(function muatPoinLive() {
+  // Supabase client dibuat manual (tanpa import module) supaya file ini tetap
+  // bisa langsung dipakai sebagai <script src="poin.js"> biasa.
+  function panggilRpc(namaFungsi, params) {
+    return fetch(`${SUPABASE_URL_GELETEK}/rest/v1/rpc/${namaFungsi}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': SUPABASE_ANON_KEY_GELETEK,
+        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY_GELETEK
+      },
+      body: JSON.stringify(params)
+    }).then(res => {
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      return res.json();
+    });
+  }
+
+  Object.entries(TOKEN_KELAS).forEach(([namaKelas, token]) => {
+    panggilRpc('get_papan_poin_publik', { p_token: token })
+      .then(daftar => {
+        if (!Array.isArray(daftar)) return;
+        daftar.forEach(s => {
+          GELETEK_POIN[namaKelas][s.nama_siswa] = s.rata_poin;
+        });
+      })
+      .catch(err => {
+        console.warn('Gagal memuat poin live untuk kelas ' + namaKelas + ':', err.message);
+      });
+  });
+})();
