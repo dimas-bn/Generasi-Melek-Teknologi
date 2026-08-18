@@ -59,9 +59,42 @@ const GELETEK_POIN = {
         daftar.forEach(s => {
           GELETEK_POIN[namaKelas][s.nama_siswa] = s.rata_poin;
         });
+        suntikkanBadgeKelas(namaKelas);
       })
       .catch(err => {
         console.warn('Gagal memuat poin live untuk kelas ' + namaKelas + ':', err.message);
       });
   });
+
+  // Kartu kelas di halaman utama (class-grid) menghitung rata-rata poin SEKALI saat
+  // halaman pertama dimuat (lewat script.js) — saat itu data live dari sini belum
+  // tentu selesai di-fetch, jadi bintangnya kosong. Fungsi ini menyuntikkan bintang
+  // itu langsung ke kartu yang bersangkutan begitu datanya siap, tanpa mengubah script.js.
+  function suntikkanBadgeKelas(namaKelas) {
+    const card = document.querySelector('.class-card[data-kelas="' + CSS.escape(namaKelas) + '"]');
+    if (!card) return; // kartu belum ada di DOM (belum dirender) — coba lagi sebentar lagi
+    const footSpan = card.querySelector('.class-card__foot > span:first-child');
+    if (!footSpan || footSpan.querySelector('.class-card__poin')) return; // sudah ada / elemen tidak ditemukan
+
+    const nilaiPoin = Object.values(GELETEK_POIN[namaKelas] || {}).filter(v => typeof v === 'number' && !isNaN(v));
+    if (!nilaiPoin.length) return;
+    const rata = nilaiPoin.reduce((a, b) => a + b, 0) / nilaiPoin.length;
+    const formatRata = Number.isInteger(rata) ? String(rata) : rata.toFixed(1);
+
+    const badge = document.createElement('span');
+    badge.className = 'class-card__poin';
+    badge.title = 'Rata-rata poin kelas (Jurnal Mengajar)';
+    badge.innerHTML = '&#9733; ' + formatRata;
+    footSpan.appendChild(document.createTextNode(' \u00b7 '));
+    footSpan.appendChild(badge);
+  }
+
+  // Kartu kelas dirender oleh script.js sesaat setelah DOMContentLoaded, kadang lebih
+  // lambat dari fetch pertama di atas — coba suntik ulang beberapa kali di awal untuk jaga-jaga.
+  let percobaan = 0;
+  const timer = setInterval(() => {
+    percobaan++;
+    Object.keys(TOKEN_KELAS).forEach(suntikkanBadgeKelas);
+    if (percobaan >= 10) clearInterval(timer);
+  }, 500);
 })();
